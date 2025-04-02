@@ -4,14 +4,12 @@ import {
     TypeOrmModuleAsyncOptions,
     TypeOrmModuleOptions,
 } from "@nestjs/typeorm";
-import { UserEntity } from "src/app/modules/user/user.entity";
-import "dotenv/config"
+import "dotenv/config";
 
-
-
-//LOAD Environment Variables
-require('dotenv').config();
-
+/**
+ * TypeORM configuration for NestJS module
+ * Uses ConfigService to load database settings from environment
+ */
 export const typeOrmAsyncConfig: TypeOrmModuleAsyncOptions = {
     imports: [ConfigModule],
     inject: [ConfigService],
@@ -20,29 +18,37 @@ export const typeOrmAsyncConfig: TypeOrmModuleAsyncOptions = {
     ): Promise<TypeOrmModuleOptions> => {
         return {
             type: 'postgres',
-            host: configService.get<string>('dbHost'),
-            port: configService.get<number>('dbPort'),
-            username: configService.get<string>('username'),
-            database: configService.get<string>('dbName'),
-            password: configService.get<string>('password'),
-            entities: [UserEntity],
-            synchronize: false,
-            migrations: ['dist/database/migrations/*.js'],
+            host: configService.get<string>('DB_HOST'),
+            port: configService.get<number>('DB_PORT'),
+            username: configService.get<string>('USERNAME'),
+            database: configService.get<string>('DB_NAME'),
+            password: configService.get<string>('PASSWORD'),
+            entities: [__dirname + '/../**/*.entity{.ts,.js}'],
+            synchronize: configService.get<string>('NODE_ENV') === 'development',
+            logging: configService.get<string>('NODE_ENV') === 'development',
+            migrations: [__dirname + '/migrations/**/*{.ts,.js}'],
+            migrationsRun: false,
         };
     },
 };
 
+/**
+ * TypeORM data source options for CLI commands
+ * Used for migrations and other TypeORM CLI operations
+ */
 export const dataSourceOptions: DataSourceOptions = {
     type: 'postgres',
     host: process.env.DB_HOST,
-    port: parseInt(process.env.DB_PORT),
+    port: parseInt(process.env.DB_PORT) || 5432,
     username: process.env.USERNAME,
     database: process.env.DB_NAME,
     password: process.env.PASSWORD,
-    entities: ['dist/**/*.entity.js'], //1
-    synchronize: false, // 2
-    migrations: ['dist/database/migrations/*.js'], // 3
+    entities: ['dist/**/*.entity.js'],
+    synchronize: false, // Should be false in production
+    logging: process.env.NODE_ENV === 'development',
+    migrations: ['dist/database/migrations/*.js'],
 };
 
-const dataSource = new DataSource(dataSourceOptions); //4
+// Data source instance for TypeORM CLI
+const dataSource = new DataSource(dataSourceOptions);
 export default dataSource;

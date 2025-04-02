@@ -1,6 +1,12 @@
-# compiled output
+# Compiled output
 /dist
 /node_modules
+/build
+
+# Environment variables
+.env
+.env.*
+!.env.example
 
 # Logs
 logs
@@ -26,10 +32,26 @@ lerna-debug.log*
 *.launch
 .settings/
 *.sublime-workspace
-
-# IDE - VSCode
 .vscode/*
 !.vscode/settings.json
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
+
+# Temporary files
+tmp/
+temp/
+
+# Database files
+*.sqlite
+*.db
+
+# SSL certificates
+*.pem
+*.key
+*.crt
+
+# Package manager lock files
+yarn.lock
+package-lock.json
+pnpm-lock.yaml

@@ -6,12 +6,20 @@ import { JwtStrategy } from './strategies/jwt.strategy';
 import { SharedModule } from '../shared/shared.module';
 import { UserModule } from '../user/user.module';
 import { ApiKeyStrategy } from './strategies/api-key.strategy';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+
 @Module({
     imports: [
-        JwtModule.register({
-            global: true,
-            secret: process.env.JWT_SECRET,
-            signOptions: { expiresIn: '1d' },
+        JwtModule.registerAsync({
+            imports: [ConfigModule],
+            inject: [ConfigService],
+            useFactory: (configService: ConfigService) => ({
+                global: true,
+                secret: configService.get<string>('JWT_SECRET'),
+                signOptions: {
+                    expiresIn: configService.get<string>('JWT_EXPIRATION', '1d')
+                },
+            }),
         }),
         SharedModule,
         UserModule,

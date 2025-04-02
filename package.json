@@ -1,10 +1,26 @@
 {
-  "name": "nest-app-boilerplate",
-  "version": "0.0.1",
-  "description": "",
-  "author": "",
-  "private": true,
-  "license": "UNLICENSED",
+  "name": "nestjs-secure-starter-kit",
+  "version": "2.0.0",
+  "description": "A comprehensive, production-ready starter kit for NestJS applications with built-in authentication, security features, and industry best practices",
+  "author": "Karimov Farda",
+  "private": false,
+  "license": "MIT",
+  "keywords": [
+    "nestjs",
+    "starter-kit",
+    "authentication",
+    "typescript",
+    "api",
+    "security",
+    "jwt",
+    "2fa",
+    "typeorm",
+    "postgresql"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/latreon/nestjs-secure-starter-kit"
+  },
   "scripts": {
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
@@ -36,6 +52,7 @@
     "bcrypt": "^5.1.1",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.1",
+    "joi": "^17.13.3",
     "passport": "^0.7.0",
     "passport-http-bearer": "^1.0.1",
     "passport-jwt": "^4.0.1",

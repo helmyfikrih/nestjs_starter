@@ -1,11 +1,29 @@
-// Database Configurations
+/**
+ * Configuration settings for the application
+ * Values are loaded from environment variables with sensible defaults
+ */
 export default () => ({
-    NODE_ENV: process.env.NODE_ENV,
-    port: parseInt(process.env.PORT),
-    secret: process.env.SECRET,
-    dbHost: process.env.DB_HOST,
-    dbPort: parseInt(process.env.DB_PORT),
-    username: process.env.USERNAME,
-    password: process.env.PASSWORD,
-    dbName: process.env.DB_NAME,
+    // Application settings
+    NODE_ENV: process.env.NODE_ENV || 'development',
+    PORT: parseInt(process.env.PORT, 10) || 3000,
+
+    // JWT settings
+    JWT_SECRET: process.env.JWT_SECRET || 'replace_this_with_strong_secret_in_production',
+    JWT_EXPIRATION: process.env.JWT_EXPIRATION || '1d',
+    JWT_REFRESH_SECRET: process.env.JWT_REFRESH_SECRET || 'replace_this_with_strong_refresh_secret_in_production',
+    JWT_REFRESH_EXPIRATION: process.env.JWT_REFRESH_EXPIRATION || '7d',
+
+    // Database settings
+    DB_HOST: process.env.DB_HOST || 'localhost',
+    DB_PORT: parseInt(process.env.DB_PORT, 10) || 5432,
+    USERNAME: process.env.USERNAME || 'postgres',
+    PASSWORD: process.env.PASSWORD || 'postgres',
+    DB_NAME: process.env.DB_NAME || 'nest_starter',
+
+    // Throttling settings
+    THROTTLE_TTL: parseInt(process.env.THROTTLE_TTL, 10) || 60,
+    THROTTLE_LIMIT: parseInt(process.env.THROTTLE_LIMIT, 10) || 10,
+
+    // Swagger settings
+    SWAGGER_ENABLED: process.env.SWAGGER_ENABLED === 'true' || process.env.NODE_ENV === 'development',
 });

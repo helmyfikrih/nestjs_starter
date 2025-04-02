@@ -9,20 +9,29 @@ import {
 } from 'class-validator';
 
 export class CreateUserDto {
-    @ApiProperty()
-    @IsEmail()
-    @IsNotEmpty()
+    @ApiProperty({
+        example: 'jane_doe@example.com',
+        description: 'User email address'
+    })
+    @IsEmail({}, { message: 'Please provide a valid email address' })
+    @IsNotEmpty({ message: 'Email is required' })
     @Transform(({ value }) => value.toLowerCase())
     email: string;
 
-    @ApiProperty()
-    @IsNotEmpty()
-    @IsString()
+    @ApiProperty({
+        example: 'janedoe',
+        description: 'Username for the account'
+    })
+    @IsNotEmpty({ message: 'Username is required' })
+    @IsString({ message: 'Username must be a string' })
     userName: string;
 
-    @ApiProperty()
-    @IsNotEmpty()
-    @MinLength(8, { message: 'password should be minimmum 8' })
-    @MaxLength(50, { message: 'password should be maximium 50' })
+    @ApiProperty({
+        example: 'StrongPassword123!',
+        description: 'User password (8-50 characters)'
+    })
+    @IsNotEmpty({ message: 'Password is required' })
+    @MinLength(8, { message: 'Password must be at least 8 characters long' })
+    @MaxLength(50, { message: 'Password cannot exceed 50 characters' })
     password: string;
 }
