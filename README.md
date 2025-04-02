@@ -83,7 +83,7 @@ This starter kit implements industry-standard encryption for 2FA secrets, addres
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/your-username/nest-starter-kit.git
+   git clone https://github.com/latreon/nest-starter-kit.git
    cd nest-starter-kit
    ```
 
