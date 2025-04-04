@@ -10,7 +10,7 @@ import { GetUser } from "../../../common/decorators/get-user.decorator";
 import { UserEntity } from "../../user/entities/user.entity";
 import { RefreshTokenDto } from "../dto/refresh-token.dto";
 
-@ApiTags('auth')
+@ApiTags('Authentication')
 @Controller('auth')
 export class AuthController {
     constructor(private authService: AuthService) { }

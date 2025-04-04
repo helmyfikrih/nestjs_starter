@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException, NotFoundException, BadRequestException } from "@nestjs/common";
+import { Injectable, UnauthorizedException, NotFoundException, BadRequestException, Optional } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { UserEntity } from "../entities/user.entity";
 import { Repository, UpdateResult } from "typeorm";
@@ -8,16 +8,43 @@ import { UpdateUserDto } from "../dto/update-user.dto";
 import { v4 as uuid4 } from "uuid";
 import { PaginationDto } from "../../../common/dto/pagination.dto";
 import { EncryptionService } from "../../../common/services/encryption.service";
+import { ConfigService } from "@nestjs/config";
+
+// Mock user for when database is disabled
+const MOCK_USER: UserEntity = {
+    id: 1,
+    userName: 'demo',
+    email: 'demo@example.com',
+    password: '$2b$10$KlBGKASI0HX5Io0DRJ/yLePhMWMuB1r64QnZYvQqjuFzq1jXrdw5G', // password: 'password'
+    apiKey: 'demo-api-key',
+    role: 'admin',
+    enable2FA: false,
+    twoFASecret: null,
+    refreshToken: null,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+};
 
 @Injectable()
 export class UserService {
+    private readonly databaseEnabled: boolean;
+    private readonly mockUsers: UserEntity[] = [MOCK_USER];
+
     constructor(
-        @InjectRepository(UserEntity)
+        @Optional() @InjectRepository(UserEntity)
         private userRepository: Repository<UserEntity>,
-        private encryptionService: EncryptionService
-    ) { }
+        private encryptionService: EncryptionService,
+        private configService: ConfigService
+    ) {
+        this.databaseEnabled = this.configService.get<boolean>('DATABASE_ENABLED');
+        console.log(`Database enabled: ${this.databaseEnabled}`);
+    }
 
     async create(userDto: CreateUserDto): Promise<UserEntity> {
+        if (!this.databaseEnabled) {
+            throw new BadRequestException('Database functionality is disabled');
+        }
+
         try {
             // Check if email already exists
             const existingUser = await this.userRepository.findOneBy({ email: userDto.email });
@@ -44,6 +71,22 @@ export class UserService {
     }
 
     async findAll(paginationDto: PaginationDto): Promise<{ items: UserEntity[], total: number, page: number, pageSize: number, totalPages: number }> {
+        if (!this.databaseEnabled) {
+            const { page = 1, pageSize = 10 } = paginationDto;
+            const mockUsersWithoutPassword = this.mockUsers.map(user => {
+                const { password, ...userWithoutPassword } = { ...user };
+                return userWithoutPassword as UserEntity;
+            });
+
+            return {
+                items: mockUsersWithoutPassword,
+                total: mockUsersWithoutPassword.length,
+                page,
+                pageSize,
+                totalPages: 1
+            };
+        }
+
         try {
             const { page = 1, pageSize = 10 } = paginationDto;
             const skip = (page - 1) * pageSize;
@@ -75,6 +118,14 @@ export class UserService {
     }
 
     async findOne(data: Partial<UserEntity>): Promise<UserEntity> {
+        if (!this.databaseEnabled) {
+            const mockUser = this.mockUsers.find(u => u.email === data.email);
+            if (!mockUser) {
+                throw new UnauthorizedException('User not found with the provided email');
+            }
+            return { ...mockUser };
+        }
+
         try {
             const user = await this.userRepository.findOneBy({ email: data.email });
             if (!user) {
@@ -90,6 +141,14 @@ export class UserService {
     }
 
     async findByApiKey(apiKey: string): Promise<UserEntity> {
+        if (!this.databaseEnabled) {
+            const mockUser = this.mockUsers.find(u => u.apiKey === apiKey);
+            if (!mockUser) {
+                throw new UnauthorizedException('Invalid API key');
+            }
+            return { ...mockUser };
+        }
+
         try {
             const user = await this.userRepository.findOneBy({ apiKey });
             if (!user) {
@@ -105,6 +164,15 @@ export class UserService {
     }
 
     async findById(id: number): Promise<UserEntity> {
+        if (!this.databaseEnabled) {
+            const mockUser = this.mockUsers.find(u => u.id === id);
+            if (!mockUser) {
+                throw new NotFoundException(`User with ID ${id} not found`);
+            }
+            const { password, ...userWithoutPassword } = { ...mockUser };
+            return userWithoutPassword as UserEntity;
+        }
+
         try {
             const user = await this.userRepository.findOneBy({ id });
             if (!user) {
@@ -131,6 +199,10 @@ export class UserService {
     }
 
     async update(id: number, updateUserDto: UpdateUserDto): Promise<UserEntity> {
+        if (!this.databaseEnabled) {
+            throw new BadRequestException('Database functionality is disabled');
+        }
+
         try {
             const user = await this.findById(id);
 
@@ -159,6 +231,10 @@ export class UserService {
     }
 
     async remove(id: number): Promise<void> {
+        if (!this.databaseEnabled) {
+            throw new BadRequestException('Database functionality is disabled');
+        }
+
         try {
             const result = await this.userRepository.delete(id);
             if (result.affected === 0) {
@@ -173,6 +249,10 @@ export class UserService {
     }
 
     async updateSecretKey(userId: number, secret: string): Promise<UpdateResult> {
+        if (!this.databaseEnabled) {
+            throw new BadRequestException('Database functionality is disabled');
+        }
+
         try {
             // Encrypt the 2FA secret before storing it
             const encryptedSecret = this.encryptionService.encrypt(secret);
@@ -190,6 +270,10 @@ export class UserService {
     }
 
     async disable2FA(userId: number): Promise<UpdateResult> {
+        if (!this.databaseEnabled) {
+            throw new BadRequestException('Database functionality is disabled');
+        }
+
         try {
             return this.userRepository.update({
                 id: userId
@@ -203,6 +287,14 @@ export class UserService {
     }
 
     async updateRefreshToken(userId: number, refreshToken: string): Promise<void> {
+        if (!this.databaseEnabled) {
+            // In-memory mock update for the demo user
+            if (userId === 1) {
+                this.mockUsers[0].refreshToken = await bcrypt.hash(refreshToken, 10);
+            }
+            return;
+        }
+
         try {
             // Hash the refresh token before storing
             const hashedRefreshToken = await bcrypt.hash(refreshToken, 10);
@@ -217,6 +309,14 @@ export class UserService {
     }
 
     async removeRefreshToken(userId: number): Promise<void> {
+        if (!this.databaseEnabled) {
+            // In-memory mock update for the demo user
+            if (userId === 1) {
+                this.mockUsers[0].refreshToken = null;
+            }
+            return;
+        }
+
         try {
             await this.userRepository.update(
                 { id: userId },

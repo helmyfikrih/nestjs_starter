@@ -6,6 +6,7 @@ export default () => ({
     // Application settings
     NODE_ENV: process.env.NODE_ENV || 'development',
     PORT: parseInt(process.env.PORT, 10) || 3000,
+    DATABASE_ENABLED: process.env.DATABASE_ENABLED === 'true',
 
     // JWT settings
     JWT_SECRET: process.env.JWT_SECRET || 'replace_this_with_strong_secret_in_production',
@@ -16,8 +17,8 @@ export default () => ({
     // Database settings
     DB_HOST: process.env.DB_HOST || 'localhost',
     DB_PORT: parseInt(process.env.DB_PORT, 10) || 5432,
-    USERNAME: process.env.USERNAME || 'postgres',
-    PASSWORD: process.env.PASSWORD || 'postgres',
+    DB_USERNAME: process.env.DB_USERNAME || 'postgres',
+    DB_PASSWORD: process.env.DB_PASSWORD || 'postgres',
     DB_NAME: process.env.DB_NAME || 'nest_starter',
 
     // Throttling settings

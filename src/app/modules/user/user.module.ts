@@ -4,10 +4,11 @@ import { UserController } from './controllers/user.controller';
 import { UserService } from './services/user.service';
 import { UserEntity } from './entities/user.entity';
 import { CommonModule } from '../../common/common.module';
+import { ConfigService } from '@nestjs/config';
 
 @Module({
     imports: [
-        TypeOrmModule.forFeature([UserEntity]),
+        ...(process.env.DATABASE_ENABLED === 'true' ? [TypeOrmModule.forFeature([UserEntity])] : []),
         CommonModule,
     ],
     controllers: [UserController],

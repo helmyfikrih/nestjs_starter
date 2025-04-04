@@ -17,17 +17,34 @@ import * as Joi from 'joi';
   imports: [
     // Environment Configuration
     ConfigModule.forRoot({
-      envFilePath: [`${process.cwd()}/.env.${process.env.NODE_ENV}`],
+      envFilePath: [`${process.cwd()}/.env.${process.env.NODE_ENV}`, `${process.cwd()}/.env`],
       isGlobal: true,
       load: [configuration],
       validationSchema: Joi.object({
         NODE_ENV: Joi.string().valid('development', 'production', 'test').default('development'),
         PORT: Joi.number().default(3000),
-        DB_HOST: Joi.string().required(),
+        DATABASE_ENABLED: Joi.boolean().default(false),
+        DB_HOST: Joi.string().when('DATABASE_ENABLED', {
+          is: true,
+          then: Joi.required(),
+          otherwise: Joi.optional(),
+        }),
         DB_PORT: Joi.number().default(5432),
-        USERNAME: Joi.string().required(),
-        PASSWORD: Joi.string().required(),
-        DB_NAME: Joi.string().required(),
+        DB_USERNAME: Joi.string().when('DATABASE_ENABLED', {
+          is: true,
+          then: Joi.required(),
+          otherwise: Joi.optional(),
+        }),
+        DB_PASSWORD: Joi.string().when('DATABASE_ENABLED', {
+          is: true,
+          then: Joi.required(),
+          otherwise: Joi.optional(),
+        }),
+        DB_NAME: Joi.string().when('DATABASE_ENABLED', {
+          is: true,
+          then: Joi.required(),
+          otherwise: Joi.optional(),
+        }),
         JWT_SECRET: Joi.string().required(),
         JWT_EXPIRATION: Joi.string().default('1h'),
         JWT_REFRESH_SECRET: Joi.string().required(),
@@ -47,8 +64,8 @@ import * as Joi from 'joi';
       }],
     }),
 
-    // Database
-    TypeOrmModule.forRootAsync(typeOrmAsyncConfig),
+    // Database - conditionally loaded
+    ...conditionalImports(),
 
     // Common modules
     CommonModule,
@@ -78,3 +95,13 @@ import * as Joi from 'joi';
   ],
 })
 export class AppModule { }
+
+/**
+ * Conditionally import modules based on configuration
+ */
+function conditionalImports() {
+  // Check environment variable directly since the ConfigModule might not be initialized yet
+  const databaseEnabled = process.env.DATABASE_ENABLED === 'true';
+
+  return databaseEnabled ? [TypeOrmModule.forRootAsync(typeOrmAsyncConfig)] : [];
+}

@@ -19,7 +19,7 @@ import { GetUser } from '../../../common/decorators/get-user.decorator';
 import { UserEntity } from '../entities/user.entity';
 import { PaginationDto } from '../../../common/dto/pagination.dto';
 
-@ApiTags('users')
+@ApiTags('Users')
 @Controller('users')
 export class UserController {
     constructor(private readonly userService: UserService) { }
