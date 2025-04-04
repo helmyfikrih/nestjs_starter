@@ -1,14 +1,15 @@
 import * as bcrypt from 'bcrypt';
 import * as speakeasy from 'speakeasy'
 import { Injectable, UnauthorizedException, BadRequestException, Logger } from "@nestjs/common";
-import { UserService } from '../user/user.service';
-import { UserEntity } from '../user/user.entity';
-import { UserLoginDto } from './dto/login.dto';
+import { UserService } from '../../user/services/user.service';
+import { UserEntity } from '../../user/entities/user.entity';
+import { UserLoginDto } from '../dto/login.dto';
 import { JwtService } from "@nestjs/jwt";
-import { Enable2FAType } from './types';
+import { Enable2FAType } from '../types/enable-2fa.type';
 import { UpdateResult } from "typeorm";
 import { ConfigService } from "@nestjs/config";
-import { EncryptionService } from "../../common/services/encryption.service";
+import { EncryptionService } from "../../../common/services/encryption.service";
+import { RefreshTokenDto } from '../dto/refresh-token.dto';
 
 @Injectable()
 export class AuthService {
@@ -20,7 +21,7 @@ export class AuthService {
         private configService: ConfigService,
         private encryptionService: EncryptionService) { }
 
-    async login(loginDTO: UserLoginDto): Promise<{ accessToken: string } | { validate2FA: string, message: string }> {
+    async login(loginDTO: UserLoginDto): Promise<{ accessToken: string, refreshToken: string } | { validate2FA: string, message: string }> {
         try {
             const user = await this.usersService.findOne(loginDTO);
 
@@ -35,26 +36,78 @@ export class AuthService {
 
             delete user.password;
 
-            const payload = {
-                email: user.email,
-                sub: user.id,
-                userName: user.userName
-            };
+            const tokens = await this.generateTokens(user);
 
-            const token = await this.jwtService.signAsync(payload, {
-                secret: this.configService.get<string>('JWT_SECRET'),
-                expiresIn: this.configService.get<string>('JWT_EXPIRATION', '1h')
-            });
+            // Store the refresh token in the database
+            await this.usersService.updateRefreshToken(user.id, tokens.refreshToken);
 
-            return {
-                accessToken: token
-            };
+            return tokens;
         } catch (error) {
             if (error instanceof UnauthorizedException) {
                 throw error;
             }
             throw new BadRequestException(`Login failed: ${error.message}`);
         }
+    }
+
+    async refreshToken(refreshTokenDto: RefreshTokenDto): Promise<{ accessToken: string, refreshToken: string }> {
+        try {
+            const { refreshToken } = refreshTokenDto;
+
+            // Verify the refresh token
+            const payload = await this.jwtService.verifyAsync(refreshToken, {
+                secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
+            });
+
+            // Find the user with this refresh token
+            const user = await this.usersService.findById(payload.sub);
+
+            // Validate that the refresh token matches what's stored
+            if (!user || !user.refreshToken || !(await bcrypt.compare(refreshToken, user.refreshToken))) {
+                throw new UnauthorizedException('Invalid refresh token');
+            }
+
+            // Generate new tokens
+            const tokens = await this.generateTokens(user);
+
+            // Update the refresh token in the database
+            await this.usersService.updateRefreshToken(user.id, tokens.refreshToken);
+
+            return tokens;
+        } catch (error) {
+            this.logger.error(`Refresh token failed: ${error.message}`);
+            throw new UnauthorizedException('Invalid refresh token');
+        }
+    }
+
+    async logout(userId: number): Promise<void> {
+        // Clear the refresh token when logging out
+        await this.usersService.removeRefreshToken(userId);
+    }
+
+    private async generateTokens(user: UserEntity): Promise<{ accessToken: string, refreshToken: string }> {
+        const payload = {
+            email: user.email,
+            sub: user.id,
+            userName: user.userName
+        };
+
+        // Generate access token
+        const accessToken = await this.jwtService.signAsync(payload, {
+            secret: this.configService.get<string>('JWT_SECRET'),
+            expiresIn: this.configService.get<string>('JWT_EXPIRATION', '15m')
+        });
+
+        // Generate refresh token with longer expiration
+        const refreshToken = await this.jwtService.signAsync(payload, {
+            secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
+            expiresIn: this.configService.get<string>('JWT_REFRESH_EXPIRATION', '7d')
+        });
+
+        return {
+            accessToken,
+            refreshToken
+        };
     }
 
     async enable2FA(userId: number): Promise<Enable2FAType> {
@@ -112,4 +165,4 @@ export class AuthService {
             nodeEnv: this.configService.get<string>("NODE_ENV"),
         };
     }
-}
+} 

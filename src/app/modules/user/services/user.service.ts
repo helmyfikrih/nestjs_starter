@@ -1,13 +1,13 @@
 import { Injectable, UnauthorizedException, NotFoundException, BadRequestException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { UserEntity } from "./user.entity";
+import { UserEntity } from "../entities/user.entity";
 import { Repository, UpdateResult } from "typeorm";
 import * as bcrypt from 'bcrypt'
-import { CreateUserDto } from "./dto/create-user.dto";
-import { UpdateUserDto } from "./dto/update-user.dto";
+import { CreateUserDto } from "../dto/create-user.dto";
+import { UpdateUserDto } from "../dto/update-user.dto";
 import { v4 as uuid4 } from "uuid";
-import { PaginationDto } from "../../common/dto/pagination.dto";
-import { EncryptionService } from "../../common/services/encryption.service";
+import { PaginationDto } from "../../../common/dto/pagination.dto";
+import { EncryptionService } from "../../../common/services/encryption.service";
 
 @Injectable()
 export class UserService {
@@ -201,4 +201,29 @@ export class UserService {
             throw new BadRequestException(`Failed to disable 2FA: ${error.message}`);
         }
     }
-}
+
+    async updateRefreshToken(userId: number, refreshToken: string): Promise<void> {
+        try {
+            // Hash the refresh token before storing
+            const hashedRefreshToken = await bcrypt.hash(refreshToken, 10);
+
+            await this.userRepository.update(
+                { id: userId },
+                { refreshToken: hashedRefreshToken }
+            );
+        } catch (error) {
+            throw new BadRequestException(`Failed to update refresh token: ${error.message}`);
+        }
+    }
+
+    async removeRefreshToken(userId: number): Promise<void> {
+        try {
+            await this.userRepository.update(
+                { id: userId },
+                { refreshToken: null }
+            );
+        } catch (error) {
+            throw new BadRequestException(`Failed to remove refresh token: ${error.message}`);
+        }
+    }
+} 
