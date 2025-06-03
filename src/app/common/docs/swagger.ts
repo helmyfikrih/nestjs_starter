@@ -20,7 +20,7 @@ export const setupSwagger = (app: INestApplication): void => {
         .setTitle('NestJS Starter Kit API Documentation')
         .setVersion('1.0.0')
         .setContact(
-            'NestJS Starter Kit Team',
+            ' ',
             'https://github.com/your-organization/nest-starter-kit',
             'contact@example.com'
         )
