@@ -2,11 +2,13 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 import {
     IsEmail,
+    IsEnum,
     IsOptional,
     IsString,
     MaxLength,
     MinLength,
 } from 'class-validator';
+import { Role } from '../enum/role.enum';
 
 export class UpdateUserDto {
     @ApiProperty({
@@ -37,4 +39,15 @@ export class UpdateUserDto {
     @MinLength(8, { message: 'Password must be at least 8 characters long' })
     @MaxLength(50, { message: 'Password cannot exceed 50 characters' })
     password?: string;
+
+    @ApiProperty({
+        required: false,
+        example: 'user',
+        description: 'Role of the account',
+        enum: () => Role, // Gunakan lazy resolver untuk enum
+        enumName: 'Role', // Tambahkan nama enum untuk kejelasan
+    })
+    @IsOptional()
+    @IsEnum(Role)
+    role?: Role
 }

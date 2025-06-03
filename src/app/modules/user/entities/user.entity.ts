@@ -50,7 +50,7 @@ export class UserEntity extends BaseEntity {
 
     @ApiProperty({
         description: "User role for authorization",
-        enum: ['user', 'admin'],
+        enum: Role,
         default: 'user',
     })
     @Column({

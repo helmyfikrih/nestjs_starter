@@ -9,6 +9,8 @@ import {
     ParseIntPipe,
     Query,
     UseGuards,
+    ParseUUIDPipe,
+    NotFoundException,
 } from '@nestjs/common';
 import { UserService } from '../services/user.service';
 import { CreateUserDto } from '../dto/create-user.dto';
@@ -21,6 +23,7 @@ import { PaginationDto } from '../../../common/dto/pagination.dto';
 import { RolesGuard } from '../../auth/guards/role.guard';
 import { Role } from '../enum/role.enum';
 import { Roles } from '../../../common/decorators/roles.decorator';
+import { FindOneParamsDTO } from 'src/app/common/dto/fineOneParams.dto';
 
 @ApiTags('Users')
 @Controller('users')
@@ -88,7 +91,7 @@ export class UserController {
         description: 'Returns the user with the specified ID',
     })
     @ApiResponse({ status: 404, description: 'User not found' })
-    findOne(@Param('id', ParseIntPipe) id: number) {
+    findOne(@Param('id', ParseUUIDPipe) id: string) {
         return this.userService.findById(id);
     }
 
@@ -101,7 +104,7 @@ export class UserController {
         description: 'User has been successfully updated',
     })
     update(
-        @Param('id', ParseIntPipe) id: number,
+        @Param('id', ParseUUIDPipe) id: string,
         @Body() updateUserDto: UpdateUserDto,
     ) {
         return this.userService.update(id, updateUserDto);
@@ -115,7 +118,7 @@ export class UserController {
         status: 200,
         description: 'User has been successfully deleted',
     })
-    remove(@Param('id', ParseIntPipe) id: number) {
+    remove(@Param('id', ParseUUIDPipe) id: string) {
         return this.userService.remove(id);
     }
 } 

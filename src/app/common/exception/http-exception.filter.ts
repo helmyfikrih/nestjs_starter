@@ -19,6 +19,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
 
         if (exception instanceof BadRequestException) {
             const responseObj = exception.getResponse();
+            console.log(responseObj)
             if (typeof responseObj === 'object' && responseObj !== null) {
                 if ('message' in responseObj && typeof responseObj.message === 'string') {
                     message = responseObj.message || 'Validation failed';

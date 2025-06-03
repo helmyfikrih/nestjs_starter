@@ -80,7 +80,7 @@ export class AuthService {
         }
     }
 
-    async logout(userId: number): Promise<void> {
+    async logout(userId: string): Promise<void> {
         // Clear the refresh token when logging out
         await this.usersService.removeRefreshToken(userId);
     }
@@ -111,7 +111,7 @@ export class AuthService {
         };
     }
 
-    async enable2FA(userId: number): Promise<Enable2FAType> {
+    async enable2FA(userId: string): Promise<Enable2FAType> {
         try {
             const user = await this.usersService.findById(userId);
 
@@ -132,7 +132,7 @@ export class AuthService {
     }
 
     async validate2FAToken(
-        userId: number,
+        userId: string,
         token: string
     ): Promise<{ verified: boolean }> {
         try {
@@ -156,7 +156,7 @@ export class AuthService {
         return this.usersService.findByApiKey(apiKey);
     }
 
-    async disable2FA(userId: number): Promise<UpdateResult> {
+    async disable2FA(userId: string): Promise<UpdateResult> {
         return this.usersService.disable2FA(userId);
     }
 

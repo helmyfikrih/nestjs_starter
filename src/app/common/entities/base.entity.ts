@@ -4,7 +4,7 @@ import { ApiProperty } from '@nestjs/swagger';
 export abstract class BaseEntity {
     @PrimaryGeneratedColumn('uuid')
     @ApiProperty({ description: 'Unique identifier' })
-    id: number;
+    id: string;
 
     @CreateDateColumn()
     @ApiProperty({ description: 'Creation timestamp' })

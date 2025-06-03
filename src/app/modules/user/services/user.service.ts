@@ -13,7 +13,7 @@ import { Role } from "../enum/role.enum";
 
 // Mock user for when database is disabled
 const MOCK_USER: UserEntity = {
-    id: 1,
+    id: '1',
     userName: 'demo',
     email: 'demo@example.com',
     password: '$2b$10$KlBGKASI0HX5Io0DRJ/yLePhMWMuB1r64QnZYvQqjuFzq1jXrdw5G', // password: 'password'
@@ -164,7 +164,7 @@ export class UserService {
         }
     }
 
-    async findById(id: number): Promise<UserEntity> {
+    async findById(id: string): Promise<UserEntity> {
         if (!this.databaseEnabled) {
             const mockUser = this.mockUsers.find(u => u.id === id);
             if (!mockUser) {
@@ -199,7 +199,7 @@ export class UserService {
         }
     }
 
-    async update(id: number, updateUserDto: UpdateUserDto): Promise<UserEntity> {
+    async update(id: string, updateUserDto: UpdateUserDto): Promise<UserEntity> {
         if (!this.databaseEnabled) {
             throw new BadRequestException('Database functionality is disabled');
         }
@@ -218,7 +218,7 @@ export class UserService {
                 const salt = await bcrypt.genSalt();
                 updateUserDto.password = await bcrypt.hash(updateUserDto.password, salt);
             }
-
+            console.log(updateUserDto)
             const updatedUser = Object.assign(user, updateUserDto);
             await this.userRepository.save(updatedUser);
             delete updatedUser.password;
@@ -231,7 +231,7 @@ export class UserService {
         }
     }
 
-    async remove(id: number): Promise<void> {
+    async remove(id: string): Promise<void> {
         if (!this.databaseEnabled) {
             throw new BadRequestException('Database functionality is disabled');
         }
@@ -249,7 +249,7 @@ export class UserService {
         }
     }
 
-    async updateSecretKey(userId: number, secret: string): Promise<UpdateResult> {
+    async updateSecretKey(userId: string, secret: string): Promise<UpdateResult> {
         if (!this.databaseEnabled) {
             throw new BadRequestException('Database functionality is disabled');
         }
@@ -270,7 +270,7 @@ export class UserService {
         }
     }
 
-    async disable2FA(userId: number): Promise<UpdateResult> {
+    async disable2FA(userId: string): Promise<UpdateResult> {
         if (!this.databaseEnabled) {
             throw new BadRequestException('Database functionality is disabled');
         }
@@ -287,10 +287,10 @@ export class UserService {
         }
     }
 
-    async updateRefreshToken(userId: number, refreshToken: string): Promise<void> {
+    async updateRefreshToken(userId: string, refreshToken: string): Promise<void> {
         if (!this.databaseEnabled) {
             // In-memory mock update for the demo user
-            if (userId === 1) {
+            if (userId === '1') {
                 this.mockUsers[0].refreshToken = await bcrypt.hash(refreshToken, 10);
             }
             return;
@@ -309,10 +309,10 @@ export class UserService {
         }
     }
 
-    async removeRefreshToken(userId: number): Promise<void> {
+    async removeRefreshToken(userId: string): Promise<void> {
         if (!this.databaseEnabled) {
             // In-memory mock update for the demo user
-            if (userId === 1) {
+            if (userId === '1') {
                 this.mockUsers[0].refreshToken = null;
             }
             return;
