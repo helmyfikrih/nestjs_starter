@@ -18,6 +18,9 @@ import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { GetUser } from '../../../common/decorators/get-user.decorator';
 import { UserEntity } from '../entities/user.entity';
 import { PaginationDto } from '../../../common/dto/pagination.dto';
+import { RolesGuard } from '../../auth/guards/role.guard';
+import { Role } from '../enum/role.enum';
+import { Roles } from '../../../common/decorators/roles.decorator';
 
 @ApiTags('Users')
 @Controller('users')
@@ -31,6 +34,8 @@ export class UserController {
         description: 'User has been successfully created',
     })
     @ApiResponse({ status: 400, description: 'Bad Request' })
+    @UseGuards(RolesGuard)
+    @Roles(Role.ADMIN)
     create(@Body() createUserDto: CreateUserDto) {
         return this.userService.create(createUserDto);
     }

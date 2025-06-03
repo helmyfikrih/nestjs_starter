@@ -2,7 +2,7 @@ import { CreateDateColumn, UpdateDateColumn, PrimaryGeneratedColumn } from 'type
 import { ApiProperty } from '@nestjs/swagger';
 
 export abstract class BaseEntity {
-    @PrimaryGeneratedColumn()
+    @PrimaryGeneratedColumn('uuid')
     @ApiProperty({ description: 'Unique identifier' })
     id: number;
 

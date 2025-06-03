@@ -82,10 +82,10 @@ import * as Joi from 'joi';
       useClass: ThrottlerGuard,
     },
     // Uncomment to apply authentication globally
-    // {
-    //   provide: APP_GUARD,
-    //   useClass: AuthenticationGuard,
-    // },
+    {
+      provide: APP_GUARD,
+      useClass: AuthenticationGuard,
+    },
 
     // Global Filters
     {

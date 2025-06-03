@@ -2,6 +2,7 @@ import { Entity, Column } from "typeorm";
 import { Exclude } from "class-transformer";
 import { ApiProperty } from "@nestjs/swagger";
 import { BaseEntity } from "../../../common/entities/base.entity";
+import { Role } from "../enum/role.enum";
 
 @Entity('users')
 export class UserEntity extends BaseEntity {
@@ -52,8 +53,12 @@ export class UserEntity extends BaseEntity {
         enum: ['user', 'admin'],
         default: 'user',
     })
-    @Column({ type: 'varchar', default: 'user' })
-    role: string;
+    @Column({
+        type: 'enum',
+        enum: Role,
+        default: Role.USER
+    })
+    role: Role;
 
     @ApiProperty({
         description: "Refresh token for JWT authentication",

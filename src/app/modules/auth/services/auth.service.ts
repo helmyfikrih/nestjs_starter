@@ -89,7 +89,8 @@ export class AuthService {
         const payload = {
             email: user.email,
             sub: user.id,
-            userName: user.userName
+            userName: user.userName,
+            role: user.role
         };
 
         // Generate access token

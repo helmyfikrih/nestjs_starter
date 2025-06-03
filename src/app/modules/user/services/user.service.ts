@@ -9,6 +9,7 @@ import { v4 as uuid4 } from "uuid";
 import { PaginationDto } from "../../../common/dto/pagination.dto";
 import { EncryptionService } from "../../../common/services/encryption.service";
 import { ConfigService } from "@nestjs/config";
+import { Role } from "../enum/role.enum";
 
 // Mock user for when database is disabled
 const MOCK_USER: UserEntity = {
@@ -17,7 +18,7 @@ const MOCK_USER: UserEntity = {
     email: 'demo@example.com',
     password: '$2b$10$KlBGKASI0HX5Io0DRJ/yLePhMWMuB1r64QnZYvQqjuFzq1jXrdw5G', // password: 'password'
     apiKey: 'demo-api-key',
-    role: 'admin',
+    role: Role.USER,
     enable2FA: false,
     twoFASecret: null,
     refreshToken: null,
